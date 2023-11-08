@@ -1,0 +1,54 @@
+(*
+x + y * 4 - 3
+define i32 @enter(i32 x, i32 y) {
+  %0 = mul i32 y, 4
+  %1 = add i32 x, %0
+  %2 = sub i32 %1, 4
+  ret %2
+}
+
+x - x * x * x / 6
+define i32 @enter(i32 x) {
+  %0 = mul i32 x, x
+  %1 = mul i32 %0, x
+  %2 = div i32 %1, 6
+  %3 = sub i32 x, %2
+  ret %3
+}
+
+1 - x * x / 2 + y * y / 4
+define i32 @enter(i32 x, i32 y) {
+  %0 = mul i32 x, x
+  %1 = mul i32 y, y
+  %2 = div i32 %0, 2
+  %3 = div i32 %1, 4
+  %4 = add i32 %2, %3
+  %5 = sub i32 1, %4
+  ret %5
+}
+
+*)
+
+type expr = Add of expr * expr | Sub of expr * expr
+          | Mul of expr * expr | Div of expr * expr
+          | Int of int | Var of string
+
+let next_var = ref 0
+
+let fresh_var (_ : unit) : string =
+    let () = next_var := !next_var + 1 in
+    "x$" ^ string_of_int !next_var
+
+
+let rec get_ref : expr -> string = function
+|Add (e1,e2) -> (* get name of thing somehow*)
+|Var v -> v
+|Int i -> int_to_string i
+
+let expr_to_li : expr -> string = function
+|Add (e1,e2) -> "%" ^ fresh_var ^ " = add i32" ^ get_ref e1 ^ ", " ^ get_ref e2
+|Sub (e1,e2) -> "%" ^ fresh_var ^ " = sub i32" ^ get_ref e1 ^ ", " ^ get_ref e2
+|Mul (e1,e2) -> "%" ^ fresh_var ^ " = mul i32" ^ get_ref e1 ^ ", " ^ get_ref e2
+|Div (e1,e2) -> "%" ^ fresh_var ^ " = div i32" ^ get_ref e1 ^ ", " ^ get_ref e2
+|Int i -> int_to_string i
+|Var v -> v

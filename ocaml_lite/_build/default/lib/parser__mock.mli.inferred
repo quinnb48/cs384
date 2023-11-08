@@ -1,0 +1,58 @@
+type token =
+    With
+  | Type
+  | True
+  | Times
+  | Then
+  | TUnit
+  | TString
+  | TInt
+  | TBool
+  | String of string
+  | Rec
+  | RParen
+  | Plus
+  | Pipe
+  | Or
+  | Of
+  | Not
+  | Negate
+  | Mod
+  | Minus
+  | Match
+  | Lt
+  | Let
+  | LParen
+  | Int of int
+  | In
+  | If
+  | Id of string
+  | Fun
+  | False
+  | Eq
+  | Else
+  | EOF
+  | DoubleSemicolon
+  | DoubleArrow
+  | Divide
+  | Concat
+  | Comma
+  | Colon
+  | Arrow
+  | And
+val menhir_begin_marker : int
+val xv_varsp : Ast.vars
+val xv_typp : Ast.typ
+val xv_typ_pipesp : Ast.pipes_typ
+val xv_typ_branchp : Ast.branch_typ
+val xv_progp : Ast.prog
+val xv_pipesp : Ast.pipes
+val xv_paramp : Ast.param
+val xv_param_lstp : Ast.param_lst
+val xv_id_lstp : Ast.id_lst
+val xv_func_app : Ast.expr
+val xv_exprp : Ast.expr
+val xv_expr_lstp : Ast.expr_lst
+val xv_branchp : Ast.branch
+val xv_bindp : Ast.bind
+val menhir_end_marker : int

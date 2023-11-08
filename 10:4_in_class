@@ -1,0 +1,57 @@
+(*
+|> = gamma, denotes a set of pairs, first in pair is name of variable, second is type
+
+(x,t) in L                          rule 1
+----------
+|> |- x : t
+
+---------------                     rule 2
+|> |- () : unit
+
+|>U{(x,t1)} |-e : t2
+---------------------------         rule 3
+|> |- (Lx: t1 .e): t1 -> t2
+
+|>|- e1:t1 -> t2    |>|- e2:t1      rule 4
+------------------------------      e1 is function with type e1 -> t2, e2 has type e1
+|> |- e1 e2 : t2                    then e1 (e2) has type t2
+
+|>|- e2:t
+------------------------------      rule 5
+|>|- (Lx:t.e1)e2 -> e1[e2/t]
+
+
+Write proof trees to derive the types of the following terms in STLC.
+If the term is ill-typed, build the proof tree as much as possible to show
+where the type error is.
+
+(& x : int . x) 5
+
+(x,int)in{(x,int)}
+------------------
+{(x,int)}|-x: int
+--------------------        ----------
+{}|-(Lx:int .x): int->int   {}|-5: int
+--------------------------------------
+{}|- (& x : int . x) 5: int
+
+& x : int -> int . & y : int . x (x y)
+
+                                        --------------      ---------
+                                        |>|-x: int->int    |>|-y:int
+-----------------------------------     -----------------------------
+{(x,int->int),(y,int)}|-x: int->int    |>|-x y:int
+--------------------------------------------------------
+{(x, int-> int)}U{(y,int)}|- x (x y): int
+---------------------------------------------------------
+{}U{(x, int -> int)}  |-Ly: int . x (x y): int->int
+--------------------------------------------------------
+{}|-(Lx: int -> int . Ly: int . x (x y)): int->int->int
+
+& f : int -> unit -> bool . & x : int . & y : unit . f x y
+& f : int -> (unit -> bool) . & x : int . & y : unit . f x y
+
+(& x : int . & y : bool . ()) 2 false
+
+(& x : int . & y : bool . ()) 3 ()
+*)

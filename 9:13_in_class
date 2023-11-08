@@ -1,0 +1,50 @@
+<P> ::= e | ( <P> ) | <P> <P>    (* can be ambiguous: <P> -> <P> <P> -> <P> e
+ which can be <P> e or <P> *)
+(* proposed solution: *)
+ <P> ::= e | (<P>)<P>
+
+<S> ::= a <S> | a <S> b | a     (* not ambiguous *)
+
+<expr> ::= <expr> + <term> | <term> | if <cond> then <expr> else <expr>
+<term> ::= <term> * <factor> | <factor>     (* can be ambiguous: <expr> + <term> ->
+<expr> + <term> + <term> -> <expr> + <term> * <factor> + <term> * <factor> *)
+<factor> ::= $int | ( <expr> )
+<cond> ::= <expr> < <expr> | <expr> = <expr>
+
+
+E::=
+    | E E +
+    |if E then E else E
+
+    (*ambiguous- eg: if E then E else 1 2 + ->
+        either if E then E else 1 + 2, or if E then E else + 1 2 *)
+
+- & plus left associative, ie want to group things to left as much as possible. eg,
+1 - 2 + 3 prefers (1-2)+3 over 1-s(2+3)
+
+
+(* disambiguating expressions: *)
+
+<expr> ::= (<expr> + <expr>)
+         | (<expr> - <expr>)
+         | (<expr> * <expr>)
+         | (<expr> / <expr>)
+         | (<expr> < <expr>)
+         | (<expr> = <expr>)
+         | (<expr> && <expr>)
+         | (<expr> || <expr>)
+         | true | false | $int
+
+(* Dangling else:
+<expr> ::= if <expr> then <expr>
+         | if <expr> then <expr> else <expr>
+         |...
+
+ f c1 then if c2 then e1 else e2    can be parsed in two ways:
+if c1 then (if c2 then e1 else e2)
+if c1 then (if c2 then e1) else e2 *)
+
+<expr> ::= (if <expr> then <expr>)
+         | if <expr> then <expr> else <expr>
+
+(* now can only get example if second if is if/else, otherwise there would be parentheses*)
