@@ -1,9 +1,9 @@
-# dune utop
+# dune exec ocaml_lite -- taster
 # OCAMLPARAM: unset
 # Shared cache: disabled
 # Workspace root: /Users/quinnbehrens/Desktop/cs384/ocaml_lite
 # Auto-detected concurrency: 8
-$ /Users/quinnbehrens/.opam/default/bin/ocamlc.opt -config > /var/folders/4r/drpsq_mx7xbgyktljpzm07x80000gn/T/dune_470bd0_output
+$ /Users/quinnbehrens/.opam/default/bin/ocamlc.opt -config > /var/folders/4r/drpsq_mx7xbgyktljpzm07x80000gn/T/dune_b619ab_output
 # Dune context:
 #  { name = "default"
 #  ; kind = "default"
@@ -117,10 +117,3 @@ $ /Users/quinnbehrens/.opam/default/bin/ocamlc.opt -config > /var/folders/4r/drp
 #      ; windows_unicode = false
 #      }
 #  }
-$ (cd _build/default && /Users/quinnbehrens/.opam/default/bin/ocamldep.opt -modules -impl lib/type_checker.ml) > _build/default/lib/.ocaml_lite.objs/ocaml_lite__Type_checker.impl.d
-$ (cd _build/default && /Users/quinnbehrens/.opam/default/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -A -g -bin-annot -I lib/.ocaml_lite.objs/byte -no-alias-deps -opaque -open Ocaml_lite -o lib/.ocaml_lite.objs/byte/ocaml_lite__Type_checker.cmo -c -impl lib/type_checker.ml)
-> File "lib/type_checker.ml", line 27, characters 4-8:
-> 27 |     TODO
->          ^^^^
-> Error: Unbound constructor TODO
-[2]

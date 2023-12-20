@@ -3,6 +3,8 @@ open OUnit2
 let tests = "test suite for ocaml_lite" >::: [
     Lexer.lex_tests;
     Lexer.parse_tests;
+    Lexer.type_checker_tests;
+    Lexer.interpreter_tests;
   ]
 
 let _ = run_test_tt_main tests
@@ -272,7 +274,7 @@ Type color =
     | purple of color * color;;
 
 let check_color =
-    let shoe = (purple r b) in match shoe with
+    let shoe = (purple red blue) in match shoe with
             |red =>  "red"
             |purple (r, b) => match r with
                 |red => match b with
@@ -316,8 +318,6 @@ Let x (s: TString) : TInt =
     (s type = TString):
             (s = "hi") = true: 1 (TInt)
             (s = "hi") = false: False (TInt)
-    (s type != TString):
-            TUnit  (* aka nothing *)
 
 Type hat =
     |bonnet of TString
@@ -357,9 +357,6 @@ let rec a 0 "a ": TString =
     if 0 < 0 then "a " ^ (a (0-1) "a ") else "a " ;;
         (*should be option 2*)
 
-let math (i: TInt) =
-    if 1 + 2 * 3 / 4 - 5 mod 2 = !true and i < 5 then if i = 2 or "h" ^ "i" = 3 then true else false else () ;;
-(* should fail due to type errors, but could give: *)
 
 Type color =
     | red
@@ -401,7 +398,7 @@ let factorial (n: TInt) : TInt =
 let rec power (n: TInt) (p: TInt) : TInt =
     if p = 0 then 1
     else n * (power n (p-1)) ;;
-(* should pass *)
+(* should give: *)
 ( p = 0 ): True, then
     1 (TInt)
 ( p != 0): False, then

@@ -2,6 +2,8 @@ open OUnit2
 open Ocaml_lite.Lexer
 open Ocaml_lite.Parser
 open Ocaml_lite.Ast
+open Ocaml_lite.Type_checker
+open Ocaml_lite.Interpreter
 
 let lex_tests = "test suite for tokenize" >::: [
     "random code" >::
@@ -71,9 +73,105 @@ let parse_tests = "test suite for parser" >::: [
 ]
 
 let type_checker_tests = "test suite for type checker" >::: [
+    "FuncBind Type Test Pass" >::
+    (fun _ -> assert_equal ~printer:typ_to_str_parens
+    (FuncTy(StringTy, IntTy))
+    (check_type(parse "let x (s: string) : int = match s with | s => if s = \"hi\" then 1 else 0 ;;")) );
+
+     "FuncBind Type Test Fail" >::
+    (fun _ -> try
+      let _ = (check_type(parse "let x (s: string) : int = match s with |s => if s = \"hi\" then 1 else false ;;")) in
+      assert_failure "FuncBind failure: passed type checking"
+    with
+    | TypeError("1 and false have different types") -> assert_bool "" true
+    | _ -> assert_failure "FuncBind failure: something else went wrong");
+
+    "TypeBind Type Test">::
+    (fun _ -> assert_equal ~printer:typ_to_str_parens
+    (UserTy("hat"))
+    (check_type(parse "type hat = |bonnet of string |tophat of int |transform of int -> string |aaa of unit |bbb of bool |genteel of (int) |boo |tup of int * bool * string ;;")));
+
+    "2MainFunc/Function application Type Test">::
+    (fun _ -> assert_equal ~printer:typ_to_str_parens
+    (StringTy)
+    (check_type(parse "let rec a i (s: string): string = if 0 < i then s ^ (a (i-1) s) else s ;; let count3 : string = (a 3 \"a \") ;;")));
+
+    "Math Type Test Fail">::
+    (fun _ -> try
+      let _ = (check_type(parse "let math (i: int) = if 1 + 2 * 3 / 4 - 5 mod 2 = not true && i <  5 then if i = 2 || \"h\" ^ \"i\" = 3 then true else false else () ;;")) in
+      assert_failure "Math Test failure: passed type checking"
+    with
+    | TypeError("Comparing different types at 1 + 2 * 3 / 4 - 5 mod 2 = !true") -> assert_bool "" true
+    | _ -> assert_failure "Math Test failure: something else went wrong");
+
+    "Type/NestedMatch Type Test">::
+    (fun _ -> assert_equal ~printer:typ_to_str_parens
+    (StringTy)
+    (check_type(parse "type color = | red of string | blue of string | purple of color * color;; let check_color = let shoe = (purple red blue) in match shoe with |red =>  \"red\" |purple (r, b) => match r with |red => match b with |blue => \"combo!\" |red => \"that's just red\" |blue => match b with |red => \"combo!\" |blue => \"that's just blue\" |blue => \"blue\" ;;")));
+
+    "EFun Type Test Fail">::
+    (fun _ -> try
+      let _ = (check_type(parse "let rec whoo = fun whoo_3 : unit -> int -> bool => fun (a: unit) (b: int) c : string => 2 + 3 mod 1;;")) in
+      assert_failure "EFun Type Test failure: passed type checking"
+    with
+    | TypeError("2 + 3 mod 1 returns int, not the expected string") -> assert_bool "" true
+    | _ -> assert_failure "EFun Type Test failure: something else went wrong");
+
+    "Double UserTy Test Pass">::
+    (fun _ -> assert_equal ~printer: typ_to_str_parens
+    (UserTy "me")
+    (check_type(parse "type you = |One of int | Two of string;; type me = | Three of string | Four of you;;")));
+
+    "Double UserTy Test Fail">::
+    (fun _ -> try
+      let _ = (check_type(parse "type me = | Three of string | Four of you;; type you = |One of int | Two of string;;")) in
+      assert_failure "Double UserTy Type Test failure: passed type checking"
+    with
+    | TypeError("id you not defined before use") -> assert_bool "" true
+    | _ -> assert_failure "Double UserTy Type Test failure: something else went wrong");
+
+    "Factorial Test Pass">::
+    (fun _ -> assert_equal ~printer: typ_to_str_parens
+    (FuncTy(IntTy, IntTy))
+    (check_type(parse "let rec factorial (n: int) : int = if n = 0 then 1 else (factorial (n-1)) * n ;;")));
+
+    "Factorial Test Fail">::
+    (fun _ -> try
+      let _ = (check_type(parse "let rec factorial (n: bool) : int = if n = 0 then 1 else (factorial (n-1)) * n ;;")) in
+      assert_failure "Factorial Test failure: passed type checking"
+    with
+    | TypeError("Comparing different types at n = 0") -> assert_bool "" true
+    | _ -> assert_failure "Factorial Test failure: something else went wrong");
+
+    "Power Test Pass">::
+    (fun _ -> assert_equal ~printer: typ_to_str_parens
+    (FuncTy(IntTy, FuncTy(IntTy, IntTy)))
+    (check_type(parse "let rec power (n: int) (p: int) : int = if p = 0 then 1 else n * (power n (p-1)) ;;")));
+
+    "Power Test Fail">::
+    (fun _ -> try
+      let _ = (check_type(parse "let rec power (n: string) (p: int) : int = if p = 0 then 1 else n * (power n (p-1)) ;;")) in
+      assert_failure "Factorial Test failure: passed type checking"
+    with
+    | TypeError("Multiplying non-integers at n * (power n(p - 1))") -> assert_bool "" true
+    | _ -> assert_failure "Factorial Test failure: something else went wrong");
 
 ]
 
 let interpreter_tests = "test suite for interpreter" >::: [
+    "Basic Test Pass">::
+    (fun _ -> assert_equal ~printer: print_itpt
+    (("base2", IntIp (Some 1))::("base", IntIp (Some 2))::[])     (* is in reverse from what's displayed by print_itpt- so, base2 is first in the list despite being displayed second*)
+    (interpret(parse "let base (p: int) : int = if p = 0 then 1 else 2;; let base2 = (base 0);;")));
+
+    "Power Test Pass">::
+    (fun _ -> assert_equal ~printer: print_itpt
+    (("apply", IntIp(Some 8))::("power", NilIp)::[])
+    (interpret(parse "let rec power (n: int) (p: int) (q: int) r : int = if p = 0 then 1 else n * (power n (p-1)) ;; let apply = (power 2 3 4 5);;")));
+
+    "FuncBind Test Pass" >::
+    (fun _ -> assert_equal ~printer: print_itpt
+    (("apply", IntIp (Some 1))::("x", IntIp (Some 0))::[])
+    (interpret(parse "let x (s: string) : int = match s with | s => if s = \"hi\" then 1 else 0 ;; let apply = (x \"hi\") ;;")) );
 
 ]

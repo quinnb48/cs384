@@ -1,0 +1,9 @@
+(* from 9/8 in class work, minus the stuff with lists and 'a types that isn't possible *)
+
+let rec factorial (n: int) : int =
+    if n = 0 then 1
+    else (factorial (n-1)) * n;;
+
+let rec power (n: int) (p: int) : int =
+    if p = 0 then 1
+    else n * (power n (p-1));;

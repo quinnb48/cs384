@@ -86,7 +86,6 @@ and prog =
     | EndMain of bind
     | Main of bind * prog
 
-
 let rec print_lst_expr : expr_lst -> string = function
     |Nil -> ""
     |ExprL (e, l) -> ", " ^ print_expr e ^ print_lst_expr l
@@ -106,7 +105,7 @@ and typ_to_str : typ -> string = function
     | StringTy -> "string"
     | UnitTy -> "unit"
     | UserTy s -> s
-    | TuplTy (t1, t2) -> typ_to_str t1 ^ " * " ^ typ_to_str t2
+    | TuplTy (t1, t2) -> "(" ^ typ_to_str t1 ^ " * " ^ typ_to_str t2 ^ ")"
     | ParenTy t1 -> "(" ^ typ_to_str t1 ^ ")"
     | FuncTy (t1, t2) -> "(" ^ typ_to_str t1 ^ ") -> (" ^ typ_to_str t2 ^ ")"
 
@@ -156,7 +155,7 @@ and print_branch_typ : branch_typ -> string = function
     | BAnd (e1,e2) -> print_expr e1 ^ " && " ^ print_expr e2
     | BOr (e1,e2) -> print_expr e1 ^ " || " ^ print_expr e2
     | EVars (e1, e2, l) -> "(" ^ print_expr e1 ^ ", " ^ print_expr e2 ^ print_lst_expr l ^ ")"
-    | EFuncApp (e1, e2) -> "(" ^ print_expr e1 ^ print_expr e2 ^ ")"
+    | EFuncApp (e1, e2) -> "(" ^ print_expr e1 ^ " " ^ print_expr e2 ^ ")"
     | EList (e1, e2) -> print_expr e1 ^ print_expr e2
     | EListEnd e -> print_expr e
     | EFun (p, pl, t, e) -> if t != NilTy then "fun " ^ print_param p ^
@@ -186,6 +185,11 @@ and print_prog : prog -> string = function
     | EndMain b -> print_bind b ^ ";;"
     | Main (b,p) -> print_bind b ^ ";; \n" ^ print_prog p
 
+and print_gamma g =
+    match g with
+    | h::r -> (match h with
+        |(expr, typ) -> "(" ^ print_expr expr ^ ", " ^ typ_to_str typ ^ "); " ^ print_gamma r)
+    | _ -> ""
 
 (* This section for testing/debugging mostly*)
 
